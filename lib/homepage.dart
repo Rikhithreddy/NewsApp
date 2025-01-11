@@ -69,7 +69,7 @@ class HomepageState extends State<Homepage> {
                       setState(() {
                         currentcategory = 'Business';
                         data.isloading=true;
-                        fetchnews('everything?q', 'bitcoin');
+                        fetchnews('everything?q', 'business');
                       });
                     },
                     child: Text(

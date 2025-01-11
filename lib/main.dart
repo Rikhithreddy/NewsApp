@@ -1,14 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:newsapp/loginpage.dart';
 import 'package:newsapp/profilepage.dart';
 import 'package:newsapp/savedpage.dart';
 import 'package:newsapp/serachpage.dart';
 import 'homepage.dart';
 
-void main()  {
-  
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MaterialApp(
-    home: MyApp(),
+    debugShowCheckedModeBanner: false,
+    home: loginpage(),
   ));
 }
 
