@@ -154,10 +154,8 @@ class _SavedPageState extends State<SavedPage> {
   }
 
   Future loadsaveddata() async {
-    final docuser = FirebaseFirestore.instance
-        .collection(data.loggedinusername)
-        .doc('saved articles');
-    DocumentSnapshot docSnapshot = await docuser.get();
+    final docuser = FirebaseFirestore.instance;
+    DocumentSnapshot docSnapshot = await docuser.collection(data.loggedinusername).doc('saved articles').get();
 
     if (docSnapshot.exists) {
       setState(() {

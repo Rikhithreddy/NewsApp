@@ -28,6 +28,7 @@ class _profilepageState extends State<profilepage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    data.isloading = true;
     loaddata();
   }
 
@@ -67,6 +68,15 @@ class _profilepageState extends State<profilepage> {
                         TextButton(
                           child: Text('YES'),
                           onPressed: () async {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
                             final collectionRef = FirebaseFirestore.instance
                                 .collection(data.loggedinusername);
                             try {
@@ -93,13 +103,14 @@ class _profilepageState extends State<profilepage> {
                             setState(() {
                               preffers.setString('loggedinusername', "");
                             });
+                            Navigator.pop(context);
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                   builder: (context) => loginpage()),
                               (route) => false,
                             );
                             SnackBar profilesnack = SnackBar(
-                                content: Text('Account deleted successfully.'));
+                                content: Text('Data deleted successfully.'));
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(profilesnack);
                           },
@@ -128,12 +139,22 @@ class _profilepageState extends State<profilepage> {
                         TextButton(
                           child: Text('YES'),
                           onPressed: () async {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
                             await FirebaseAuth.instance.signOut();
                             Navigator.of(context).pop();
                             var prefs = await SharedPreferences.getInstance();
                             setState(() {
                               prefs.setString('loggedinusername', "");
                             });
+                            Navigator.pop(context);
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                   builder: (context) => loginpage()),
@@ -149,216 +170,296 @@ class _profilepageState extends State<profilepage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'edit',
+        backgroundColor: const Color.fromARGB(255, 226, 214, 38),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+                color: const Color.fromARGB(255, 137, 133, 133), width: 2)),
         child: Icon(Icons.edit),
         onPressed: () {
           setState(() {
             edit = true;
+            fullnamecontroller.text = fullname;
+            emailidcontroller.text = emailid;
+            biocontroller.text = bio;
+            imageurlcontroller.text = imageurl;
+            dobcontroller.text = dob;
           });
         },
       ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 50,
-            ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(75),
-              child: Container(
-                height: 150,
-                width: 150,
-                child: imageurl == null
-                    ? Image.asset('lib/images/profile.png')
-                    : Image.network(
-                        "$imageurl",
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset('lib/images/profile.png');
-                        },
-                        loadingBuilder: (BuildContext context, Widget child,
-                            ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ??
-                                            1)
-                                    : null,
-                              ),
-                            );
-                          }
-                        },
-                        fit: BoxFit.fill,
-                      ),
-              ),
-            ),
-            edit == true
-                ? Expanded(
-                    child: ListView(
-                      children: [
-                        SizedBox(
-                          height: 30,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: TextField(
-                            controller: fullnamecontroller,
-                            decoration: InputDecoration(
-                                hintText: fullname,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: TextField(
-                            controller: biocontroller,
-                            decoration: InputDecoration(
-                                hintText: bio,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: TextField(
-                            controller: emailidcontroller,
-                            decoration: InputDecoration(
-                                hintText: emailid,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: TextField(
-                            controller: dobcontroller,
-                            decoration: InputDecoration(
-                                hintText: dob,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: TextField(
-                            controller: imageurlcontroller,
-                            decoration: InputDecoration(
-                                hintText: imageurl,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Center(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(15),
+      backgroundColor: const Color.fromARGB(255, 196, 197, 196),
+      body: data.isloading == true
+          ? Center(child: CircularProgressIndicator())
+          : Center(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 50,
+                  ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(75),
+                    child: Container(
+                      height: 150,
+                      width: 150,
+                      child: imageurl == null
+                          ? Image.asset('lib/images/profile.png')
+                          : Image.network(
+                              "$imageurl",
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset('lib/images/profile.png');
+                              },
+                              loadingBuilder: (BuildContext context,
+                                  Widget child,
+                                  ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                } else {
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  (loadingProgress
+                                                          .expectedTotalBytes ??
+                                                      1)
+                                              : null,
+                                    ),
+                                  );
+                                }
+                              },
+                              fit: BoxFit.fill,
                             ),
-                            height: 45,
-                            width: 140,
-                            child: Center(
-                              child: TextButton(
-                                onPressed: () async {
-                                  final docuser = FirebaseFirestore.instance
-                                      .collection(data.loggedinusername)
-                                      .doc('userdetails');
-                                  await docuser.update({
-                                    'fullname': fullnamecontroller.text == ''
-                                        ? fullname
-                                        : fullnamecontroller.text,
-                                    'emailid': emailidcontroller.text == ''
-                                        ? emailid
-                                        : emailidcontroller.text,
-                                    'dob': dobcontroller.text == ''
-                                        ? dob
-                                        : dobcontroller.text,
-                                    'bio': biocontroller.text == ''
-                                        ? bio
-                                        : biocontroller.text,
-                                    'url': imageurlcontroller.text == ''
-                                        ? imageurl
-                                        : imageurlcontroller.text,
-                                  });
-                                  setState(() {
-                                    edit = false;
-                                    loaddata();
-                                  });
-                                },
-                                child: Text(
-                                  'save changes',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                  edit == true
+                      ? Expanded(
+                          child: ListView(
+                            children: [
+                              SizedBox(
+                                height: 30,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
+                                child: TextField(
+                                  controller: fullnamecontroller,
+                                  decoration: InputDecoration(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(Icons.close),
+                                        onPressed: () =>
+                                            fullnamecontroller.clear(),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10))),
                                 ),
                               ),
-                            ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
+                                child: TextField(
+                                  controller: biocontroller,
+                                  decoration: InputDecoration(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(Icons.close),
+                                        onPressed: () => biocontroller.clear(),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10))),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
+                                child: TextField(
+                                  controller: emailidcontroller,
+                                  decoration: InputDecoration(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(Icons.close),
+                                        onPressed: () =>
+                                            emailidcontroller.clear(),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10))),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
+                                child: TextField(
+                                  controller: dobcontroller,
+                                  decoration: InputDecoration(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(Icons.close),
+                                        onPressed: () => dobcontroller.clear(),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10))),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
+                                child: TextField(
+                                  controller: imageurlcontroller,
+                                  decoration: InputDecoration(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(Icons.close),
+                                        onPressed: () =>
+                                            imageurlcontroller.clear(),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10))),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Center(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  height: 45,
+                                  width: 140,
+                                  child: Center(
+                                    child: TextButton(
+                                      onPressed: () async {
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (context) {
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
+                                          },
+                                        );
+                                        final docuser = FirebaseFirestore
+                                            .instance
+                                            .collection(data.loggedinusername)
+                                            .doc('userdetails');
+                                        await docuser.update({
+                                          'fullname':
+                                              fullnamecontroller.text == ''
+                                                  ? fullname
+                                                  : fullnamecontroller.text,
+                                          'emailid':
+                                              emailidcontroller.text == ''
+                                                  ? emailid
+                                                  : emailidcontroller.text,
+                                          'dob': dobcontroller.text == ''
+                                              ? dob
+                                              : dobcontroller.text,
+                                          'bio': biocontroller.text == ''
+                                              ? bio
+                                              : biocontroller.text,
+                                          'url': imageurlcontroller.text == ''
+                                              ? imageurl
+                                              : imageurlcontroller.text,
+                                        });
+                                        setState(() {
+                                          edit = false;
+                                          loaddata();
+                                          Navigator.pop(context);
+                                        });
+                                      },
+                                      child: Text(
+                                        'save changes',
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 30,
+                        )
+                      : Expanded(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: 30,
+                                  ),
+                                  Text(
+                                    'Full Name:',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    '$fullname',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(
+                                    'Bio:',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    '$bio',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(
+                                    'Email id:',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    '$emailid',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(
+                                    'DoB:',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    '$dob',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                ]),
                           ),
-                          Text(
-                            'Full Name: $fullname',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                            'Bio: $bio',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                            'Email id: $emailid',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                            'DoB: $dob',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ]),
-                  )
-          ],
-        ),
-      ),
+                        )
+                ],
+              ),
+            ),
     );
   }
 
   Future loaddata() async {
     var prefs = await SharedPreferences.getInstance();
     setState(() {
-      data.loggedinusername = prefs.getString('loggedinusername') ?? "...";
+      data.loggedinusername = prefs.getString('loggedinusername') ?? "";
     });
     final docuser = FirebaseFirestore.instance
         .collection(data.loggedinusername)
@@ -372,6 +473,7 @@ class _profilepageState extends State<profilepage> {
         dob = datas['dob'];
         bio = datas['bio'];
         imageurl = datas['url'];
+        data.isloading = false;
       });
     } else {}
   }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:newsapp/data.dart';
 import 'package:newsapp/main.dart';
+import 'package:newsapp/signinmethods.dart';
 import 'package:newsapp/signuppage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,6 +20,7 @@ class _loginpageState extends State<loginpage> {
   @override
   void initState() {
     super.initState();
+    data.isloading = true;
     loaduser();
   }
 
@@ -80,6 +82,10 @@ class _loginpageState extends State<loginpage> {
                   child: TextField(
                     controller: emailidcontroller,
                     decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () => emailidcontroller.clear(),
+                        ),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)),
                         hintText: 'Email id'),
@@ -91,6 +97,10 @@ class _loginpageState extends State<loginpage> {
                   child: TextField(
                     controller: passwordcontroller,
                     decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () => passwordcontroller.clear(),
+                        ),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)),
                         hintText: 'Password'),
@@ -111,8 +121,18 @@ class _loginpageState extends State<loginpage> {
                       child: Builder(builder: (context) {
                         return TextButton(
                           onPressed: () async {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
                             if (emailidcontroller.text == "" ||
                                 passwordcontroller.text == "") {
+                              Navigator.pop(context);
                               SnackBar profilesnack = SnackBar(
                                   content: Text(
                                       'Username or password cant\'t be empty.'));
@@ -130,16 +150,16 @@ class _loginpageState extends State<loginpage> {
                                   prefs.setString('loggedinusername',
                                       emailidcontroller.text);
                                 });
+                                Navigator.pop(context);
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => MyApp()),
                                 );
                                 SnackBar profilesnack = SnackBar(
-                                  content: Text(
-                                      'successfully signed in'));
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(profilesnack);
+                                    content: Text('successfully signed in'));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(profilesnack);
                               } on FirebaseAuthException catch (e) {
                                 String message = '';
                                 if (e.code == 'user-not-found') {
@@ -151,6 +171,7 @@ class _loginpageState extends State<loginpage> {
                                   message =
                                       'An error occurred. Please check your credentials.';
                                 }
+                                Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(message)),
                                 );
@@ -196,29 +217,41 @@ class _loginpageState extends State<loginpage> {
                       child: SizedBox(
                         height: 80,
                         width: 80,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: Image.asset(
-                            'lib/images/google.png',
-                            fit: BoxFit.fill,
+                        child: GestureDetector(
+                          onTap: () async {
+                            User? user =
+                                await AuthService().signinwithgoogle(context);
+                            if (user != null) {
+                              var pref = await SharedPreferences.getInstance();
+                              setState(() {
+                                pref.setString(
+                                    'loggedinusername', user.email ?? "");
+                                data.loggedinusername = user.email ?? "";
+                              });
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => signindetails()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Google Sign-In failed. Please try again.')),
+                              );
+                            }
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(40),
+                            child: Image.asset(
+                              'lib/images/google.png',
+                              fit: BoxFit.fill,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: 80,
-                        width: 80,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: Image.asset(
-                            'lib/images/facebook.png',
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                      ),
-                    )
+                    
                   ],
                 ),
                 SizedBox(
@@ -254,6 +287,7 @@ class _loginpageState extends State<loginpage> {
     var prefs = await SharedPreferences.getInstance();
     setState(() {
       data.loggedinusername = prefs.getString('loggedinusername') ?? "";
+      data.isloading = false;
     });
   }
 }

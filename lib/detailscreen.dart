@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:newsapp/data.dart';
-import 'package:newsapp/savedpage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class detailscreen extends StatefulWidget {
   final int index;
@@ -13,6 +13,12 @@ class detailscreen extends StatefulWidget {
 
 class _detailscreenState extends State<detailscreen> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadusername();
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -23,7 +29,7 @@ class _detailscreenState extends State<detailscreen> {
           },
         ),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 229, 236, 98),
+        backgroundColor: Colors.amber,
         actions: [
           IconButton(
               onPressed: () async {
@@ -268,6 +274,13 @@ class _detailscreenState extends State<detailscreen> {
       ),
     );
   }
+  
+  Future loadusername()async {
+    var pref=await SharedPreferences.getInstance();
+    setState(() {
+      data.loggedinusername=pref.getString('loggedinusername')??"";
+    });
+  }
 }
 
 class saveddetailscreen extends StatefulWidget {
@@ -280,6 +293,12 @@ class saveddetailscreen extends StatefulWidget {
 
 class _saveddetailscreenState extends State<saveddetailscreen> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loaduser();
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -290,7 +309,7 @@ class _saveddetailscreenState extends State<saveddetailscreen> {
           },
         ),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 229, 236, 98),
+        backgroundColor: Colors.amber,
         actions: [
           IconButton(
               onPressed: () async {
@@ -495,5 +514,12 @@ class _saveddetailscreenState extends State<saveddetailscreen> {
         ),
       ),
     );
+  }
+  
+  Future loaduser()async {
+    var pref=await SharedPreferences.getInstance();
+    setState(() {
+      data.loggedinusername=pref.getString('loggedinusername')??"";
+    });
   }
 }

@@ -83,7 +83,7 @@ class MyAppState extends State<MyApp> {
             },
           );
         }),
-        backgroundColor: const Color.fromARGB(255, 229, 236, 98),
+        backgroundColor: Colors.amber,
         title: Center(
           child: Text(
             'NewsApp',
