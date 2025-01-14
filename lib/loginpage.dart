@@ -169,7 +169,7 @@ class _loginpageState extends State<loginpage> {
                                   message = 'Incorrect Password';
                                 } else {
                                   message =
-                                      'An error occurred. Please check your credentials.';
+                                      'An error occurred. Please check your credentials or signin with google.';
                                 }
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(

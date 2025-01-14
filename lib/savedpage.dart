@@ -162,6 +162,11 @@ class _SavedPageState extends State<SavedPage> {
         data.isloading=false;
         data.savedarticles=docSnapshot.get('articles') ?? [];
       });
+    }else{
+      setState(() {
+        data.isloading=false;
+        data.savedarticles=[];
+      });
     }
   }
 }

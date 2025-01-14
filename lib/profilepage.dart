@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:newsapp/data.dart';
 import 'package:newsapp/loginpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,77 +51,6 @@ class _profilepageState extends State<profilepage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () async {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Confirm deletion?'),
-                      content: Text('Are you sure want to delete account'),
-                      actions: [
-                        TextButton(
-                          child: Text('NO'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        TextButton(
-                          child: Text('YES'),
-                          onPressed: () async {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              },
-                            );
-                            final collectionRef = FirebaseFirestore.instance
-                                .collection(data.loggedinusername);
-                            try {
-                              var snapshots = await collectionRef.get();
-                              for (var doc in snapshots.docs) {
-                                await doc.reference.delete();
-                              }
-                            } catch (e) {
-                              print("Error deleting collection: $e");
-                            }
-                            try {
-                              User? user = FirebaseAuth.instance.currentUser;
-                              if (user != null) {
-                                await user.delete();
-                                print("User account deleted successfully.");
-                              } else {
-                                print("No user is logged in.");
-                              }
-                            } catch (e) {
-                              print("Error deleting account: $e");
-                            }
-                            var preffers =
-                                await SharedPreferences.getInstance();
-                            setState(() {
-                              preffers.setString('loggedinusername', "");
-                            });
-                            Navigator.pop(context);
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                  builder: (context) => loginpage()),
-                              (route) => false,
-                            );
-                            SnackBar profilesnack = SnackBar(
-                                content: Text('Data deleted successfully.'));
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(profilesnack);
-                          },
-                        ),
-                      ],
-                    );
-                  });
-            },
-          ),
-          IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
               showDialog(
@@ -149,6 +79,7 @@ class _profilepageState extends State<profilepage> {
                               },
                             );
                             await FirebaseAuth.instance.signOut();
+                            await GoogleSignIn().signOut();
                             Navigator.of(context).pop();
                             var prefs = await SharedPreferences.getInstance();
                             setState(() {
